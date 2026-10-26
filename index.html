@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>バー・ミッドナイト｜カクテル作りゲーム</title>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;700&family=Zen+Kaku+Gothic+New:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#10202b;--panel:#18303f;--line:#2c4a5c;--text:#f1e9d8;--sub:#9fb4bf;--brass:#d9a441;--ok:#7fd1a0;--bad:#ef7d6b;--btn:#1f3b4c;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:dark}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]){--bg:#f3ecdc;--panel:#fffaf0;--line:#d8cbb0;--text:#2a2118;--sub:#6e6250;--brass:#a8741a;--ok:#2f8a57;--bad:#c4452f;--btn:#efe3c9;color-scheme:light}}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--text);font-family:"Zen Kaku Gothic New","Hiragino Sans","Yu Gothic",sans-serif;line-height:1.6}
+h1,h2,.serif{font-family:"Shippori Mincho","Hiragino Mincho ProN","Yu Mincho",serif}
+main{max-width:720px;margin:0 auto;padding:16px}
+header{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}
+h1{font-size:1.3rem;margin:0}
+.stat{color:var(--sub);font-size:.9rem}.stat b{color:var(--brass);font-size:1.1rem}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-top:12px}
+.order .who{color:var(--sub);font-size:.85rem}
+.order h2{margin:2px 0 4px;font-size:1.5rem;color:var(--brass)}
+.recipe{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.recipe span{background:var(--btn);border-radius:20px;padding:2px 10px;font-size:.85rem}
+#top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding-bottom:2px}
+.stage{display:grid;grid-template-columns:150px 1fr;gap:12px;align-items:center}
+@media(max-width:520px){.stage{grid-template-columns:100px 1fr}.stage .hint{display:none}.order h2{font-size:1.25rem}.card{padding:10px 12px}}
+.glasswrap{width:100%}
+.tabs{display:flex;gap:6px;overflow-x:auto;margin-bottom:10px;padding-bottom:2px}
+.tabs button{flex:none;min-height:40px;padding:6px 12px}
+.tabs button.on{background:var(--brass);color:#1b1408;border-color:var(--brass);font-weight:700}
+svg{width:100%;height:auto;display:block}
+.shake{animation:shk .12s linear 6}
+@keyframes shk{0%{transform:translateX(-5px) rotate(-3deg)}50%{transform:translateX(5px) rotate(3deg)}100%{transform:translateX(-5px) rotate(-3deg)}}
+@media(prefers-reduced-motion:reduce){.shake{animation:none}}
+.list{font-size:.9rem;color:var(--sub);min-height:3em}
+.list b{color:var(--text)}
+.bottles{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:8px}
+button{font:inherit;color:var(--text);background:var(--btn);border:1px solid var(--line);border-radius:10px;padding:8px 6px;cursor:pointer;min-height:44px}
+button:hover{border-color:var(--brass)}
+button:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
+button:disabled{opacity:.4;cursor:not-allowed}
+.bottle{display:flex;align-items:center;gap:8px;text-align:left}
+.dot{width:14px;height:14px;border-radius:50%;flex:none;border:1px solid rgba(255,255,255,.4)}
+.methods{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.methods button{flex:1;min-width:90px}
+.methods button.on{background:var(--brass);color:#1b1408;border-color:var(--brass);font-weight:700}
+.row{display:flex;gap:8px;margin-top:10px}
+.row button{flex:1}
+.primary{background:var(--brass);color:#1b1408;font-weight:700;border-color:var(--brass)}
+.hint{color:var(--sub);font-size:.8rem;margin-top:8px}
+label.opt{display:flex;gap:8px;align-items:center;font-size:.9rem;color:var(--sub);margin-top:10px}
+.result{border-color:var(--brass)}
+.result .stars{font-size:1.6rem;color:var(--brass);letter-spacing:2px}
+.diff{font-size:.88rem;margin:6px 0 0;padding:0;list-style:none}
+.good{color:var(--ok)}.warn{color:var(--bad)}
+.hide{display:none}
+.big{font-size:2.2rem;color:var(--brass);margin:0}
+</style>
+</head>
+<body>
+<main>
+<header>
+  <h1>バー・ミッドナイト</h1>
+  <div class="stat">お客さん <b id="n">1</b>/5　スコア <b id="score">0</b></div>
+</header>
+<div id="start" class="card">
+  <p class="serif" style="font-size:1.2rem;margin:0 0 6px">今夜のバーテンダーはあなた。</p>
+  <p style="margin:0">お客さんの注文どおりにボトルをタップして注ぎ、作り方（ビルド／ステア／シェイク）とガーニッシュを選んで提供しましょう。全5杯。</p>
+  <label class="opt"><input type="checkbox" id="blind"> レシピを隠す（得点2倍・上級者向け）</label>
+  <div class="row"><button class="primary" id="go">開店する</button></div>
+</div>
+<div id="game" class="hide">
+  <div id="top">
+  <section class="card order">
+    <div class="who" id="who"></div>
+    <h2 id="drink"></h2>
+    <div class="recipe" id="recipe"></div>
+    <div class="hint" id="how"></div>
+  </section>
+  <section class="card stage">
+    <div class="glasswrap" id="gw">
+      <svg viewBox="0 -14 200 264" role="img" aria-label="グラスの中身">
+        <defs><clipPath id="clip"><path d="M40 20H160L146 224H54Z"/></clipPath></defs>
+        <g clip-path="url(#clip)" id="layers"></g>
+        <path d="M40 20H160L146 224H54Z" fill="rgba(255,255,255,.07)" stroke="var(--sub)" stroke-width="3" stroke-linejoin="round"/>
+        <path d="M100 224V238M70 240H130" stroke="var(--sub)" stroke-width="4" stroke-linecap="round"/>
+        <g id="gar"></g>
+      </svg>
+    </div>
+    <div>
+      <div class="list" id="list">グラスは空です。ボトルをタップして注ぎましょう。</div>
+      <div class="hint">1タップ＝1杯分。グラスは8杯分まで。</div>
+    </div>
+  </section>
+  </div>
+  <section class="card">
+    <div class="tabs" id="tabs"></div>
+    <div class="bottles" id="bottles"></div>
+    <div class="methods" id="methods"></div>
+    <!-- garnish -->
+    <div class="methods" id="garnishes" style="margin-top:4px"></div>
+    <div class="row">
+      <button id="undo">ひとつ戻す</button>
+      <button id="clear">空にする</button>
+      <button class="primary" id="serve">提供する</button>
+    </div>
+  </section>
+</div>
+<section class="card result hide" id="res"></section>
+</main>
+<script>
+const ING={gin:['ジン','#cfe6ee'],vodka:['ウォッカ','#e6eef2'],rum:['ラム','#c9a36a'],tequila:['テキーラ','#e8d9a0'],orange_l:['オレンジリキュール','#f0a64a'],coffee_l:['コーヒーリキュール','#3b2418'],lime:['ライムジュース','#b8e07a'],syrup:['シロップ','#f3e6b8'],oj:['オレンジジュース','#ffa726'],cran:['クランベリー','#c2243e'],tonic:['トニックウォーター','#dff3f5'],ginger:['ジンジャーエール','#e3c36b'],cola:['コーラ','#4a2a1a'],whisky:['ウイスキー','#c8872e'],lemon:['レモンジュース','#f4ec8a'],soda:['ソーダ','#eaf6f8'],vd:['ドライベルモット','#e9e2b0'],vs:['スイートベルモット','#6b2a22'],campari:['カンパリ','#d0243a'],pine:['パイナップルジュース','#f7d54a'],coconut:['ココナッツミルク','#f6f1e4']};
+const GAR={none:['なし'],lemon:['レモン'],lime:['ライム'],orange:['オレンジ'],cherry:['チェリー'],olive:['オリーブ'],mint:['ミント']};
+const MET={build:'ビルド（そのまま）',stir:'ステア（かき混ぜる）',shake:'シェイク（振る）'};
+const MENU=[
+{n:'ジントニック',m:'build',g:'lime',r:{gin:2,tonic:4}},
+{n:'モスコミュール',m:'build',g:'lime',r:{vodka:2,lime:1,ginger:4}},
+{n:'スクリュードライバー',m:'build',g:'orange',r:{vodka:2,oj:4}},
+{n:'キューバリブレ',m:'build',g:'lime',r:{rum:2,lime:1,cola:4}},
+{n:'ブラックルシアン',m:'stir',g:'none',r:{vodka:3,coffee_l:2}},
+{n:'ダイキリ',m:'shake',g:'lime',r:{rum:3,lime:2,syrup:1}},
+{n:'マルガリータ',m:'shake',g:'lime',r:{tequila:3,lime:2,orange_l:1}},
+{n:'コスモポリタン',m:'shake',g:'orange',r:{vodka:2,cran:2,orange_l:1,lime:1}},
+{n:'ウイスキーハイボール',m:'build',g:'lemon',r:{whisky:2,soda:4}},
+{n:'ジンフィズ',m:'shake',g:'lemon',r:{gin:3,lemon:2,syrup:1,soda:2}},
+{n:'トム・コリンズ',m:'build',g:'lemon',r:{gin:2,lemon:2,syrup:1,soda:3}},
+{n:'ウイスキーサワー',m:'shake',g:'cherry',r:{whisky:3,lemon:2,syrup:1}},
+{n:'マンハッタン',m:'stir',g:'cherry',r:{whisky:4,vs:2}},
+{n:'ドライマティーニ',m:'stir',g:'olive',r:{gin:5,vd:1}},
+{n:'ネグローニ',m:'stir',g:'orange',r:{gin:2,campari:2,vs:2}},
+{n:'ピニャコラーダ',m:'shake',g:'cherry',r:{rum:2,pine:3,coconut:2}},
+{n:'モヒート',m:'build',g:'mint',r:{rum:2,lime:2,syrup:1,soda:3}},
+{n:'ギムレット',m:'shake',g:'lime',r:{gin:3,lime:2,syrup:1}},
+{n:'ホワイトレディ',m:'shake',g:'none',r:{gin:3,orange_l:1,lemon:2}},
+{n:'カミカゼ',m:'shake',g:'lime',r:{vodka:2,orange_l:2,lime:2}},
+{n:'カンパリソーダ',m:'build',g:'orange',r:{campari:2,soda:4}},
+{n:'シンデレラ',m:'shake',g:'orange',r:{oj:3,lemon:2,pine:3}},
+{n:'シャーリーテンプル',m:'build',g:'cherry',r:{ginger:5,cran:1,lime:1}},
+{n:'ヴァージンモヒート',m:'build',g:'mint',r:{lime:2,syrup:1,soda:4}},
+{n:'ヴァージンピニャコラーダ',m:'shake',g:'cherry',r:{pine:4,coconut:2,lime:1}},
+{n:'レモネード',m:'build',g:'lemon',r:{lemon:2,syrup:1,soda:4}},
+{n:'サラトガクーラー',m:'build',g:'lime',r:{lime:2,syrup:1,ginger:4}},
+{n:'クランベリースプリッツァー',m:'build',g:'lime',r:{cran:3,soda:3,lime:1}},
+{n:'トロピカルサンライズ',m:'shake',g:'orange',r:{oj:3,pine:3,cran:1}},
+{n:'ライムトニック',m:'build',g:'lime',r:{tonic:5,lime:2}}
+];
+const CUS=['会社帰りのお客さん','常連の山田さん','観光客のお客さん','今夜が誕生日のお客さん','静かに飲みたいお客さん','隣町から来たお客さん','初めて来店のお客さん'];
+const CAP=8;
+let pour=[],method=null,garnish=null,cur=null,round=0,score=0,order=[],blind=false,busy=false,follow=false,served=0,cust=[];
+const $=id=>document.getElementById(id);
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a}
+function counts(p){const c={};p.forEach(k=>c[k]=(c[k]||0)+1);return c}
+function mix(p){if(!p.length)return'#888';let r=0,g=0,b=0;p.forEach(k=>{const h=ING[k][1];r+=parseInt(h.slice(1,3),16);g+=parseInt(h.slice(3,5),16);b+=parseInt(h.slice(5,7),16)});const n=p.length;return`rgb(${r/n|0},${g/n|0},${b/n|0})`}
+function drawGlass(mixed){
+  const L=$('layers');L.innerHTML='';const u=25;
+  if(mixed){const h=pour.length*u;L.innerHTML=`<rect x="0" y="${224-h}" width="200" height="${h}" fill="${mix(pour)}" opacity=".92"/>`;return}
+  pour.forEach((k,i)=>{L.insertAdjacentHTML('beforeend',`<rect x="0" y="${224-(i+1)*u}" width="200" height="${u+.5}" fill="${ING[k][1]}" opacity=".92"/>`)})
+}
+function renderList(){
+  const c=counts(pour),ks=Object.keys(c);
+  $('list').innerHTML=(ks.length?ks.map(k=>`<b>${ING[k][0]}</b> ×${c[k]}`).join('　'):'グラスは空です。ボトルをタップして注ぎましょう。')+`<br>作り方：${method?MET[method].split('（')[0]:'―'}　飾り：${garnish?GAR[garnish][0]:'―'}`;
+  drawGlass(false)
+}
+function buildBottles(){
+  const b=$('bottles');b.innerHTML='';
+  Object.keys(ING).filter(k=>CAT[k]===tab).forEach(k=>{const e=document.createElement('button');e.className='bottle';e.innerHTML=`<span class="dot" style="background:${ING[k][1]}"></span>${ING[k][0]}`;e.onclick=()=>{if(busy||pour.length>=CAP)return;pour.push(k);renderList()};b.appendChild(e)});
+}
+function setup(){
+  const m=$('methods');m.innerHTML='';
+  Object.keys(MET).forEach(k=>{const e=document.createElement('button');e.textContent=MET[k];e.dataset.k=k;e.onclick=()=>{if(busy)return;method=k;renderList();[...m.children].forEach(x=>x.classList.toggle('on',x.dataset.k===k))};m.appendChild(e)});
+}
+function next(){
+  cur=order[round];pour=[];method=null;garnish=null;busy=false;drawGarnish(null);
+  $('n').textContent=round+1;$('score').textContent=score;
+  {const p=cust[round];$('who').textContent=p.n+(follow?'「おいしかった！同じ好みでもう一杯！」':'「'+p.q+'」');}
+  $('drink').textContent=cur.n;
+  $('recipe').innerHTML=blind?'':Object.entries(cur.r).map(([k,v])=>`<span>${ING[k][0]} ${v}</span>`).join('');
+  $('how').textContent=blind?'レシピ非表示：お店の定番レシピを思い出して作ってください。ガーニッシュもお忘れなく。':'作り方：'+MET[cur.m]+'　ガーニッシュ：'+GAR[cur.g][0];
+  [...$('methods').children].forEach(x=>x.classList.remove('on'));
+  [...$('garnishes').children].forEach(x=>x.classList.remove('on'));
+  $('res').classList.add('hide');renderList();$('serve').disabled=false
+}
+function serve(){
+  if(busy)return;
+  if(!pour.length){$('list').textContent='まずは何か注いでください。';return}
+  if(!method){$('list').textContent='作り方を選んでください。';return}
+  if(!garnish){$('list').textContent='ガーニッシュを選んでください（不要なら「なし」）。';return}
+  busy=true;$('serve').disabled=true;
+  const gw=$('gw');
+  if(method!=='build'){if(method==='shake')gw.classList.add('shake');drawGlass(true)}
+  setTimeout(()=>{gw.classList.remove('shake');judge()},method==='shake'?800:400)
+}
+function judge(){
+  const c=counts(pour),need=cur.r,total=Object.values(need).reduce((a,b)=>a+b,0);
+  const keys=new Set([...Object.keys(c),...Object.keys(need)]);
+  let err=0;const lines=[];
+  keys.forEach(k=>{const a=c[k]||0,b=need[k]||0;err+=Math.abs(a-b);
+    if(a!==b)lines.push(`<li class="warn">${ING[k][0]}：${a}杯分（正解は${b}杯分）</li>`)});
+  let acc=Math.max(0,1-err/total);
+  const mOk=method===cur.m;
+  if(!mOk){acc*=.7;lines.push(`<li class="warn">作り方：${MET[method]}（正解は${MET[cur.m]}）</li>`)}
+  if(garnish!==cur.g){acc*=.85;lines.push(`<li class="warn">ガーニッシュ：${GAR[garnish][0]}（正解は${GAR[cur.g][0]}）</li>`)}
+  const pts=Math.round(acc*100)*(blind?2:1);
+  score+=pts;$('score').textContent=score;
+  const st=acc>=.95?3:acc>=.7?2:acc>=.4?1:0;
+  const say=['うーん…これは注文と違うかな。','飲めなくはない、かな。','おいしい！ありがとう。','完璧！今夜はいい店に来たよ。'][st];
+  if(!lines.length)lines.push('<li class="good">レシピも作り方もガーニッシュもぴったりです。</li>');
+  const last=round===4,more=st>=2&&!follow;served++;
+  $('res').innerHTML=`<div class="stars" aria-label="星${st}つ">${'★'.repeat(st)}${'☆'.repeat(3-st)}</div>
+  <p class="serif" style="font-size:1.1rem;margin:4px 0">「${say}」</p>
+  <div>${cur.n}　+${pts}点</div><ul class="diff">${lines.join('')}</ul>
+  ${more?'<p class="good" style="margin:8px 0 0">気に入ってもらえました。同じ好みでもう一杯の注文です。</p>':''}<div class="row"><button class="primary" id="nx">${more?'追加注文を受ける':last?'結果を見る':'次のお客さんへ'}</button></div>`;
+  $('res').classList.remove('hide');$('nx').onclick=()=>{if(more){follow=true;order[round]=pickDrink(cust[round].t,cur);next()}else{follow=false;round++;last?finish():next()}};
+  $('nx').focus({preventScroll:true});$('res').scrollIntoView({block:'nearest'})
+}
+function finish(){
+  $('game').classList.add('hide');
+  const max=served*(blind?200:100),r=score/max;
+  const rank=r>=.9?'伝説のバーテンダー':r>=.7?'一流のバーテンダー':r>=.45?'見習いバーテンダー':'これから修業中';
+  $('res').innerHTML=`<p class="stat" style="margin:0">今夜の売上</p><p class="big serif">${score}点</p>
+  <p class="serif" style="font-size:1.2rem;margin:0">称号：${rank}</p>
+  <div class="row"><button class="primary" id="again">もう一度開店する</button></div>`;
+  $('res').classList.remove('hide');$('again').onclick=()=>{$('res').classList.add('hide');$('start').classList.remove('hide')}
+}
+$('go').onclick=()=>{blind=$('blind').checked;cust=shuffle(PERS).slice(0,5);order=cust.map(p=>pickDrink(p.t));round=0;score=0;served=0;follow=false;$('start').classList.add('hide');$('game').classList.remove('hide');next()};
+$('undo').onclick=()=>{if(busy)return;pour.pop();renderList()};
+$('clear').onclick=()=>{if(busy)return;pour=[];renderList()};
+$('serve').onclick=serve;
+function drawGarnish(g){
+  const s='stroke="rgba(0,0,0,.35)" stroke-width="1.5"';
+  const slice=(f,l)=>`<circle cx="152" cy="22" r="17" fill="${f}" ${s}/><path d="M152 22V5M152 22L166 12M152 22L168 28M152 22L140 36M152 22L138 12" stroke="${l}" stroke-width="1.5"/>`;
+  const m={
+    lemon:slice('#f6e45a','#fffbe0'),lime:slice('#9ad14b','#eaffc8'),orange:slice('#ffa53a','#ffe2b8'),
+    cherry:`<path d="M112 12C118 -6 134 -8 142 2" fill="none" stroke="#6a8a3a" stroke-width="2.5"/><circle cx="112" cy="16" r="9" fill="#c01632" ${s}/>`,
+    olive:`<path d="M110 -10L132 40" stroke="#bbb" stroke-width="2.5"/><ellipse cx="126" cy="26" rx="9" ry="12" fill="#7d9a3a" ${s}/><circle cx="126" cy="20" r="3.5" fill="#c0392b"/>`,
+    mint:`<ellipse cx="96" cy="8" rx="16" ry="8" fill="#4caf6a" transform="rotate(-25 96 8)" ${s}/><ellipse cx="116" cy="4" rx="16" ry="8" fill="#5fc67c" transform="rotate(15 116 4)" ${s}/><ellipse cx="106" cy="-4" rx="12" ry="7" fill="#43a05f" ${s}/>`
+  };
+  $('gar').innerHTML=m[g]||'';
+}
+function buildGarnish(){
+  const w=$('garnishes');w.innerHTML='';
+  Object.keys(GAR).forEach(k=>{const e=document.createElement('button');e.textContent=GAR[k][0];e.dataset.k=k;e.onclick=()=>{if(busy)return;garnish=k;drawGarnish(k);renderList();[...w.children].forEach(x=>x.classList.toggle('on',x.dataset.k===k))};w.appendChild(e)});
+}
+const TAGS={'ジントニック':['light','fizzy','dry'],'モスコミュール':['fizzy','light'],'スクリュードライバー':['sweet','light'],'キューバリブレ':['sweet','fizzy','tropical'],'ブラックルシアン':['sweet','strong'],'ダイキリ':['dry','light','tropical'],'マルガリータ':['dry','strong'],'コスモポリタン':['sweet','light'],'ウイスキーハイボール':['dry','fizzy'],'ジンフィズ':['fizzy','light'],'トム・コリンズ':['fizzy','light','sweet'],'ウイスキーサワー':['sweet','strong'],'マンハッタン':['strong','sweet'],'ドライマティーニ':['dry','strong'],'ネグローニ':['dry','strong'],'ピニャコラーダ':['tropical','sweet'],'モヒート':['fizzy','light','tropical'],'ギムレット':['dry','light'],'ホワイトレディ':['dry','strong'],'カミカゼ':['dry','strong'],'カンパリソーダ':['dry','light','fizzy']};
+const PERS=[{n:'甘党のお客さん',t:'sweet',q:'甘めのをお願いします。'},{n:'辛口好きのお客さん',t:'dry',q:'キリッとしたのが飲みたいな。'},{n:'さっぱり好きのお客さん',t:'light',q:'軽く飲めるのがいいな。'},{n:'お酒に強いお客さん',t:'strong',q:'ガツンと強いのをください。'},{n:'南国気分のお客さん',t:'tropical',q:'南国っぽいのが飲みたい！'},{n:'炭酸好きのお客さん',t:'fizzy',q:'しゅわっとしたのがいいな。'}];
+Object.assign(TAGS,{'シンデレラ':['nonalc','sweet','light','tropical'],'シャーリーテンプル':['nonalc','sweet','fizzy'],'ヴァージンモヒート':['nonalc','fizzy','light'],'ヴァージンピニャコラーダ':['nonalc','tropical','sweet'],'レモネード':['nonalc','light','fizzy'],'サラトガクーラー':['nonalc','fizzy','light'],'クランベリースプリッツァー':['nonalc','fizzy','light'],'トロピカルサンライズ':['nonalc','tropical','sweet'],'ライムトニック':['nonalc','fizzy','dry','light']});
+PERS.push({n:'お酒が飲めないお客さん',t:'nonalc',q:'ノンアルコールでお願いします。'});
+function pickDrink(t,ex){const l=MENU.filter(d=>{const g=TAGS[d.n]||[];return d!==ex&&g.includes(t)&&(t==='nonalc'||!g.includes('nonalc'))});return shuffle(l.length?l:MENU)[0]}
+const CAT={gin:'alc',vodka:'alc',rum:'alc',tequila:'alc',whisky:'alc',orange_l:'alc',coffee_l:'alc',vd:'alc',vs:'alc',campari:'alc',lime:'soft',lemon:'soft',oj:'soft',cran:'soft',pine:'soft',coconut:'soft',syrup:'soft',tonic:'mixer',ginger:'mixer',cola:'mixer',soda:'mixer'};
+const TABS=[['alc','アルコール'],['soft','ノンアルコール'],['mixer','割りもの'],['method','作り方'],['garnish','ガーニッシュ']];
+let tab='alc';
+function buildTabs(){const w=$('tabs');w.innerHTML='';TABS.forEach(([k,l])=>{const e=document.createElement('button');e.textContent=l;e.dataset.k=k;e.onclick=()=>showTab(k);w.appendChild(e)})}
+function showTab(t){tab=t;[...$('tabs').children].forEach(x=>x.classList.toggle('on',x.dataset.k===t));const ing=t==='alc'||t==='soft'||t==='mixer';$('bottles').classList.toggle('hide',!ing);$('methods').classList.toggle('hide',t!=='method');$('garnishes').classList.toggle('hide',t!=='garnish');if(ing)buildBottles()}
+setup();buildGarnish();buildTabs();showTab('alc');
+</script>
+</body>
+</html>
