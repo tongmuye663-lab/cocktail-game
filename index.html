@@ -2,14 +2,15 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>バー・ミッドナイト｜カクテル作りゲーム</title>
 <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;700&family=Zen+Kaku+Gothic+New:wght@400;700&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#10202b;--panel:#18303f;--line:#2c4a5c;--text:#f1e9d8;--sub:#9fb4bf;--brass:#d9a441;--ok:#7fd1a0;--bad:#ef7d6b;--btn:#1f3b4c;
 box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:dark}
 @media (prefers-color-scheme:light){:root:not([data-theme="dark"]){--bg:#f3ecdc;--panel:#fffaf0;--line:#d8cbb0;--text:#2a2118;--sub:#6e6250;--brass:#a8741a;--ok:#2f8a57;--bad:#c4452f;--btn:#efe3c9;color-scheme:light}}
-*{box-sizing:border-box}
+*{box-sizing:border-box;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+button{-webkit-user-select:none;user-select:none}
 html,body{margin:0}
 body{background:var(--bg);color:var(--text);font-family:"Zen Kaku Gothic New","Hiragino Sans","Yu Gothic",sans-serif;line-height:1.6}
 h1,h2,.serif{font-family:"Shippori Mincho","Hiragino Mincho ProN","Yu Mincho",serif}
@@ -110,7 +111,7 @@ label.opt{display:flex;gap:8px;align-items:center;font-size:.9rem;color:var(--su
 <section class="card result hide" id="res"></section>
 </main>
 <script>
-const ING={gin:['ジン','#cfe6ee'],vodka:['ウォッカ','#e6eef2'],rum:['ラム','#c9a36a'],tequila:['テキーラ','#e8d9a0'],orange_l:['オレンジリキュール','#f0a64a'],coffee_l:['コーヒーリキュール','#3b2418'],lime:['ライムジュース','#b8e07a'],syrup:['シロップ','#f3e6b8'],oj:['オレンジジュース','#ffa726'],cran:['クランベリー','#c2243e'],tonic:['トニックウォーター','#dff3f5'],ginger:['ジンジャーエール','#e3c36b'],cola:['コーラ','#4a2a1a'],whisky:['ウイスキー','#c8872e'],lemon:['レモンジュース','#f4ec8a'],soda:['ソーダ','#eaf6f8'],vd:['ドライベルモット','#e9e2b0'],vs:['スイートベルモット','#6b2a22'],campari:['カンパリ','#d0243a'],pine:['パイナップルジュース','#f7d54a'],coconut:['ココナッツミルク','#f6f1e4']};
+const ING={gin:['ジン','#cfe6ee'],vodka:['ウォッカ','#e6eef2'],rum:['ラム','#c9a36a'],tequila:['テキーラ','#e8d9a0'],orange_l:['オレンジリキュール','#f0a64a'],coffee_l:['コーヒーリキュール','#3b2418'],lime:['ライムジュース','#b8e07a'],syrup:['シロップ','#f3e6b8'],oj:['オレンジジュース','#ffa726'],cran:['クランベリー','#c2243e'],tonic:['トニックウォーター','#dff3f5'],ginger:['ジンジャーエール','#e3c36b'],cola:['コーラ','#4a2a1a'],whisky:['ウイスキー','#c8872e'],lemon:['レモンジュース','#f4ec8a'],soda:['ソーダ','#eaf6f8'],vd:['ドライベルモット','#e9e2b0'],vs:['スイートベルモット','#6b2a22'],campari:['カンパリ','#d0243a'],pine:['パイナップルジュース','#f7d54a'],coconut:['ココナッツミルク','#f6f1e4'],absinthe:['アブサン','#bfe39a'],mead:['蜂蜜酒（ミード）','#e8b94a'],white_w:['白ワイン','#efe3a0'],red_w:['赤ワイン','#7a1830'],spark:['スパークリングワイン','#f3ecb0'],coffee:['コーヒー','#3a2616'],milk:['ミルク','#fbf6ee']};
 const GAR={none:['なし'],lemon:['レモン'],lime:['ライム'],orange:['オレンジ'],cherry:['チェリー'],olive:['オリーブ'],mint:['ミント']};
 const MET={build:'ビルド（そのまま）',stir:'ステア（かき混ぜる）',shake:'シェイク（振る）'};
 const MENU=[
@@ -143,7 +144,25 @@ const MENU=[
 {n:'サラトガクーラー',m:'build',g:'lime',r:{lime:2,syrup:1,ginger:4}},
 {n:'クランベリースプリッツァー',m:'build',g:'lime',r:{cran:3,soda:3,lime:1}},
 {n:'トロピカルサンライズ',m:'shake',g:'orange',r:{oj:3,pine:3,cran:1}},
-{n:'ライムトニック',m:'build',g:'lime',r:{tonic:5,lime:2}}
+{n:'ライムトニック',m:'build',g:'lime',r:{tonic:5,lime:2}},
+{n:'アブサンドリップ',m:'build',g:'none',r:{absinthe:2,syrup:1,soda:4}},
+{n:'デス・イン・ザ・アフタヌーン',m:'build',g:'none',r:{absinthe:1,spark:5}},
+{n:'サゼラック',m:'stir',g:'lemon',r:{whisky:4,absinthe:1,syrup:1}},
+{n:'ミードトニック',m:'build',g:'lemon',r:{mead:2,tonic:4}},
+{n:'ミードサワー',m:'shake',g:'lemon',r:{mead:3,lemon:2}},
+{n:'ミードモスコミュール',m:'build',g:'lime',r:{mead:2,lime:1,ginger:4}},
+{n:'アイリッシュコーヒー',m:'build',g:'none',r:{whisky:2,coffee:5,syrup:1}},
+{n:'エスプレッソマティーニ',m:'shake',g:'none',r:{vodka:3,coffee_l:2,coffee:2,syrup:1}},
+{n:'コーヒートニック',m:'build',g:'lemon',r:{coffee:3,tonic:4}},
+{n:'カルーアミルク',m:'build',g:'none',r:{coffee_l:3,milk:5}},
+{n:'ホワイトルシアン',m:'build',g:'none',r:{vodka:2,coffee_l:2,milk:3}},
+{n:'ラムミルクパンチ',m:'shake',g:'none',r:{rum:2,milk:4,syrup:1}},
+{n:'カフェオレ',m:'build',g:'none',r:{coffee:4,milk:4}},
+{n:'ミモザ',m:'build',g:'orange',r:{spark:4,oj:4}},
+{n:'サングリア',m:'build',g:'orange',r:{red_w:4,oj:2,syrup:1,soda:1}},
+{n:'ワインスプリッツァー',m:'build',g:'lemon',r:{white_w:4,soda:4}},
+{n:'カリモーチョ',m:'build',g:'lemon',r:{red_w:4,cola:4}},
+{n:'ニューヨークサワー',m:'shake',g:'lemon',r:{whisky:3,lemon:2,syrup:1,red_w:1}}
 ];
 const CUS=['会社帰りのお客さん','常連の山田さん','観光客のお客さん','今夜が誕生日のお客さん','静かに飲みたいお客さん','隣町から来たお客さん','初めて来店のお客さん'];
 const CAP=8;
@@ -245,13 +264,15 @@ function buildGarnish(){
 const TAGS={'ジントニック':['light','fizzy','dry'],'モスコミュール':['fizzy','light'],'スクリュードライバー':['sweet','light'],'キューバリブレ':['sweet','fizzy','tropical'],'ブラックルシアン':['sweet','strong'],'ダイキリ':['dry','light','tropical'],'マルガリータ':['dry','strong'],'コスモポリタン':['sweet','light'],'ウイスキーハイボール':['dry','fizzy'],'ジンフィズ':['fizzy','light'],'トム・コリンズ':['fizzy','light','sweet'],'ウイスキーサワー':['sweet','strong'],'マンハッタン':['strong','sweet'],'ドライマティーニ':['dry','strong'],'ネグローニ':['dry','strong'],'ピニャコラーダ':['tropical','sweet'],'モヒート':['fizzy','light','tropical'],'ギムレット':['dry','light'],'ホワイトレディ':['dry','strong'],'カミカゼ':['dry','strong'],'カンパリソーダ':['dry','light','fizzy']};
 const PERS=[{n:'甘党のお客さん',t:'sweet',q:'甘めのをお願いします。'},{n:'辛口好きのお客さん',t:'dry',q:'キリッとしたのが飲みたいな。'},{n:'さっぱり好きのお客さん',t:'light',q:'軽く飲めるのがいいな。'},{n:'お酒に強いお客さん',t:'strong',q:'ガツンと強いのをください。'},{n:'南国気分のお客さん',t:'tropical',q:'南国っぽいのが飲みたい！'},{n:'炭酸好きのお客さん',t:'fizzy',q:'しゅわっとしたのがいいな。'}];
 Object.assign(TAGS,{'シンデレラ':['nonalc','sweet','light','tropical'],'シャーリーテンプル':['nonalc','sweet','fizzy'],'ヴァージンモヒート':['nonalc','fizzy','light'],'ヴァージンピニャコラーダ':['nonalc','tropical','sweet'],'レモネード':['nonalc','light','fizzy'],'サラトガクーラー':['nonalc','fizzy','light'],'クランベリースプリッツァー':['nonalc','fizzy','light'],'トロピカルサンライズ':['nonalc','tropical','sweet'],'ライムトニック':['nonalc','fizzy','dry','light']});
+Object.assign(TAGS,{'アブサンドリップ':['strong','dry'],'デス・イン・ザ・アフタヌーン':['fizzy','dry'],'サゼラック':['strong','dry'],'ミードトニック':['fizzy','light','sweet'],'ミードサワー':['sweet','light'],'ミードモスコミュール':['fizzy','sweet'],'アイリッシュコーヒー':['strong','sweet'],'エスプレッソマティーニ':['strong','sweet'],'コーヒートニック':['nonalc','fizzy','dry','light'],'カルーアミルク':['sweet','light'],'ホワイトルシアン':['sweet','strong'],'ラムミルクパンチ':['sweet','tropical'],'カフェオレ':['nonalc','sweet','light'],'ミモザ':['fizzy','light','dry'],'サングリア':['sweet','light'],'ワインスプリッツァー':['fizzy','light','dry'],'カリモーチョ':['fizzy','sweet'],'ニューヨークサワー':['strong','sweet']});
 PERS.push({n:'お酒が飲めないお客さん',t:'nonalc',q:'ノンアルコールでお願いします。'});
 function pickDrink(t,ex){const l=MENU.filter(d=>{const g=TAGS[d.n]||[];return d!==ex&&g.includes(t)&&(t==='nonalc'||!g.includes('nonalc'))});return shuffle(l.length?l:MENU)[0]}
-const CAT={gin:'alc',vodka:'alc',rum:'alc',tequila:'alc',whisky:'alc',orange_l:'alc',coffee_l:'alc',vd:'alc',vs:'alc',campari:'alc',lime:'soft',lemon:'soft',oj:'soft',cran:'soft',pine:'soft',coconut:'soft',syrup:'soft',tonic:'mixer',ginger:'mixer',cola:'mixer',soda:'mixer'};
+const CAT={gin:'alc',vodka:'alc',rum:'alc',tequila:'alc',whisky:'alc',orange_l:'alc',coffee_l:'alc',vd:'alc',vs:'alc',campari:'alc',lime:'soft',lemon:'soft',oj:'soft',cran:'soft',pine:'soft',coconut:'soft',syrup:'soft',tonic:'mixer',ginger:'mixer',cola:'mixer',soda:'mixer',absinthe:'alc',mead:'alc',white_w:'alc',red_w:'alc',spark:'alc',coffee:'soft',milk:'soft'};
 const TABS=[['alc','アルコール'],['soft','ノンアルコール'],['mixer','割りもの'],['method','作り方'],['garnish','ガーニッシュ']];
 let tab='alc';
 function buildTabs(){const w=$('tabs');w.innerHTML='';TABS.forEach(([k,l])=>{const e=document.createElement('button');e.textContent=l;e.dataset.k=k;e.onclick=()=>showTab(k);w.appendChild(e)})}
 function showTab(t){tab=t;[...$('tabs').children].forEach(x=>x.classList.toggle('on',x.dataset.k===t));const ing=t==='alc'||t==='soft'||t==='mixer';$('bottles').classList.toggle('hide',!ing);$('methods').classList.toggle('hide',t!=='method');$('garnishes').classList.toggle('hide',t!=='garnish');if(ing)buildBottles()}
+document.addEventListener('gesturestart',e=>e.preventDefault());
 setup();buildGarnish();buildTabs();showTab('alc');
 </script>
 </body>
