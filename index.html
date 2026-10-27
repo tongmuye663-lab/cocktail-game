@@ -63,13 +63,14 @@ label.opt{display:flex;gap:8px;align-items:center;font-size:.9rem;color:var(--su
 <main>
 <header>
   <h1>バー・ミッドナイト</h1>
-  <div class="stat">お客さん <b id="n">1</b>/5　スコア <b id="score">0</b></div>
+  <div class="stat"><span id="lbl">お客さん</span> <b id="n">1</b><span id="of">/5</span>　スコア <b id="score">0</b></div>
 </header>
 <div id="start" class="card">
   <p class="serif" style="font-size:1.2rem;margin:0 0 6px">今夜のバーテンダーはあなた。</p>
   <p style="margin:0">お客さんの注文どおりにボトルをタップして注ぎ、作り方（ビルド／ステア／シェイク）とガーニッシュを選んで提供しましょう。全5杯。</p>
   <label class="opt"><input type="checkbox" id="blind"> レシピを隠す（得点2倍・上級者向け）</label>
-  <div class="row"><button class="primary" id="go">開店する</button></div>
+  <p class="stat" style="margin:10px 0 0;font-size:.88rem">で5人モード：全部5人のお客さん（追加注文あり）。<br>エンドレスモード：材料・作り方・ガーニッシュのどれかを間違えるまで続きます。自己ベストを目指そう。</p>
+  <div class="row"><button class="primary" id="go">5人モードで開店</button><button class="primary" id="goEnd">エンドレスモードで開店</button></div>
 </div>
 <div id="game" class="hide">
   <div id="top">
@@ -166,7 +167,7 @@ const MENU=[
 ];
 const CUS=['会社帰りのお客さん','常連の山田さん','観光客のお客さん','今夜が誕生日のお客さん','静かに飲みたいお客さん','隣町から来たお客さん','初めて来店のお客さん'];
 const CAP=8;
-let pour=[],method=null,garnish=null,cur=null,round=0,score=0,order=[],blind=false,busy=false,follow=false,served=0,cust=[];
+let pour=[],method=null,garnish=null,cur=null,round=0,score=0,order=[],blind=false,busy=false,follow=false,served=0,cust=[],endless=false;
 const $=id=>document.getElementById(id);
 function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a}
 function counts(p){const c={};p.forEach(k=>c[k]=(c[k]||0)+1);return c}
@@ -191,7 +192,7 @@ function setup(){
 }
 function next(){
   cur=order[round];pour=[];method=null;garnish=null;busy=false;drawGarnish(null);
-  $('n').textContent=round+1;$('score').textContent=score;
+  $('n').textContent=endless?served+1:round+1;$('score').textContent=score;
   {const p=cust[round];$('who').textContent=p.n+(follow?'「おいしかった！同じ好みでもう一杯！」':'「'+p.q+'」');}
   $('drink').textContent=cur.n;
   $('recipe').innerHTML=blind?'':Object.entries(cur.r).map(([k,v])=>`<span>${ING[k][0]} ${v}</span>`).join('');
@@ -220,20 +221,21 @@ function judge(){
   const mOk=method===cur.m;
   if(!mOk){acc*=.7;lines.push(`<li class="warn">作り方：${MET[method]}（正解は${MET[cur.m]}）</li>`)}
   if(garnish!==cur.g){acc*=.85;lines.push(`<li class="warn">ガーニッシュ：${GAR[garnish][0]}（正解は${GAR[cur.g][0]}）</li>`)}
-  const pts=Math.round(acc*100)*(blind?2:1);
+  const pts=endless?((err>0||!mOk||garnish!==cur.g)?0:100*(blind?2:1)):Math.round(acc*100)*(blind?2:1);
   score+=pts;$('score').textContent=score;
   const st=acc>=.95?3:acc>=.7?2:acc>=.4?1:0;
   const say=['うーん…これは注文と違うかな。','飲めなくはない、かな。','おいしい！ありがとう。','完璧！今夜はいい店に来たよ。'][st];
   if(!lines.length)lines.push('<li class="good">レシピも作り方もガーニッシュもぴったりです。</li>');
-  const last=round===4,more=st>=2&&!follow;served++;
+  const last=!endless&&round===4,more=st>=2&&!follow,miss=endless&&(err>0||!mOk||garnish!==cur.g);served++;
   $('res').innerHTML=`<div class="stars" aria-label="星${st}つ">${'★'.repeat(st)}${'☆'.repeat(3-st)}</div>
   <p class="serif" style="font-size:1.1rem;margin:4px 0">「${say}」</p>
   <div>${cur.n}　+${pts}点</div><ul class="diff">${lines.join('')}</ul>
-  ${more?'<p class="good" style="margin:8px 0 0">気に入ってもらえました。同じ好みでもう一杯の注文です。</p>':''}<div class="row"><button class="primary" id="nx">${more?'追加注文を受ける':last?'結果を見る':'次のお客さんへ'}</button></div>`;
-  $('res').classList.remove('hide');$('nx').onclick=()=>{if(more){follow=true;order[round]=pickDrink(cust[round].t,cur);next()}else{follow=false;round++;last?finish():next()}};
+  ${miss?'<p class="warn" style="margin:8px 0 0">レシピを間違えてしまいました。ゲームオーバーです。</p>':more?'<p class="good" style="margin:8px 0 0">気に入ってもらえました。同じ好みでもう一杯の注文です。</p>':''}<div class="row"><button class="primary" id="nx">${miss?'結果を見る':more?'追加注文を受ける':last?'結果を見る':'次のお客さんへ'}</button></div>`;
+  $('res').classList.remove('hide');$('nx').onclick=()=>{if(miss){finish()}else if(more){follow=true;order[round]=pickDrink(cust[round].t,cur);next()}else{follow=false;round++;if(endless){newCust(round);next()}else{last?finish():next()}}};
   $('nx').focus({preventScroll:true});$('res').scrollIntoView({block:'nearest'})
 }
 function finish(){
+  if(endless)return finishEndless();
   $('game').classList.add('hide');
   const max=served*(blind?200:100),r=score/max;
   const rank=r>=.9?'伝説のバーテンダー':r>=.7?'一流のバーテンダー':r>=.45?'見習いバーテンダー':'これから修業中';
@@ -242,7 +244,8 @@ function finish(){
   <div class="row"><button class="primary" id="again">もう一度開店する</button></div>`;
   $('res').classList.remove('hide');$('again').onclick=()=>{$('res').classList.add('hide');$('start').classList.remove('hide')}
 }
-$('go').onclick=()=>{blind=$('blind').checked;cust=shuffle(PERS).slice(0,5);order=cust.map(p=>pickDrink(p.t));round=0;score=0;served=0;follow=false;$('start').classList.add('hide');$('game').classList.remove('hide');next()};
+$('goEnd').onclick=()=>{blind=$('blind').checked;endless=true;cust=[];order=[];newCust(0);round=0;score=0;served=0;follow=false;$('lbl').textContent='';$('of').textContent='杯目';$('start').classList.add('hide');$('game').classList.remove('hide');next()};
+$('go').onclick=()=>{blind=$('blind').checked;endless=false;$('lbl').textContent='お客さん';$('of').textContent='/5';cust=shuffle(PERS).slice(0,5);order=cust.map(p=>pickDrink(p.t));round=0;score=0;served=0;follow=false;$('start').classList.add('hide');$('game').classList.remove('hide');next()};
 $('undo').onclick=()=>{if(busy)return;pour.pop();renderList()};
 $('clear').onclick=()=>{if(busy)return;pour=[];renderList()};
 $('serve').onclick=serve;
@@ -272,6 +275,19 @@ const TABS=[['alc','アルコール'],['soft','ノンアルコール'],['mixer',
 let tab='alc';
 function buildTabs(){const w=$('tabs');w.innerHTML='';TABS.forEach(([k,l])=>{const e=document.createElement('button');e.textContent=l;e.dataset.k=k;e.onclick=()=>showTab(k);w.appendChild(e)})}
 function showTab(t){tab=t;[...$('tabs').children].forEach(x=>x.classList.toggle('on',x.dataset.k===t));const ing=t==='alc'||t==='soft'||t==='mixer';$('bottles').classList.toggle('hide',!ing);$('methods').classList.toggle('hide',t!=='method');$('garnishes').classList.toggle('hide',t!=='garnish');if(ing)buildBottles()}
+function newCust(i){cust[i]=PERS[Math.random()*PERS.length|0];order[i]=pickDrink(cust[i].t)}
+function finishEndless(){
+  $('game').classList.add('hide');
+  const n=Math.max(0,served-1),key='cg_best'+(blind?'_b':'');
+  let best=0;try{best=+localStorage.getItem(key)||0}catch(e){}
+  const nb=n>best&&n>0;if(nb){try{localStorage.setItem(key,String(n))}catch(e){}}
+  const rank=n>=30?'伝説のバーテンダー':n>=20?'一流のバーテンダー':n>=10?'ベテランバーテンダー':n>=5?'見習いバーテンダー':'これから修行中';
+  $('res').innerHTML=`<p class="stat" style="margin:0">エンドレスモード　ゲームオーバー</p><p class="big serif">${n}杯連続成功</p>
+  <p style="margin:0">スコア：${score}点　自己ベスト：${Math.max(best,n)}杯${nb?'　<b class="good">新記録！</b>':''}</p>
+  <p class="serif" style="font-size:1.2rem;margin:6px 0 0">称号：${rank}</p>
+  <div class="row"><button class="primary" id="again">もう一度開店する</button></div>`;
+  $('res').classList.remove('hide');$('again').onclick=()=>{$('res').classList.add('hide');$('start').classList.remove('hide')}
+}
 document.addEventListener('gesturestart',e=>e.preventDefault());
 setup();buildGarnish();buildTabs();showTab('alc');
 </script>
