@@ -46,8 +46,9 @@ button:disabled{opacity:.4;cursor:not-allowed}
 .methods{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
 .methods button{flex:1;min-width:90px}
 .methods button.on{background:var(--brass);color:#1b1408;border-color:var(--brass);font-weight:700}
-.row{display:flex;gap:8px;margin-top:10px}
-.row button{flex:1}
+.row{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.row button{flex:1 1 140px}
+.tabs button[data-k="taboo"]{color:var(--bad)}
 .primary{background:var(--brass);color:#1b1408;font-weight:700;border-color:var(--brass)}
 .hint{color:var(--sub);font-size:.8rem;margin-top:8px}
 label.opt{display:flex;gap:8px;align-items:center;font-size:.9rem;color:var(--sub);margin-top:10px}
@@ -63,17 +64,19 @@ label.opt{display:flex;gap:8px;align-items:center;font-size:.9rem;color:var(--su
 <main>
 <header>
   <h1>バー・ミッドナイト</h1>
-  <div class="stat"><span id="lbl">お客さん</span> <b id="n">1</b><span id="of">/5</span>　スコア <b id="score">0</b></div>
+  <div class="stat"><span id="lbl">お客さん</span> <b id="n">1</b><span id="of">/5</span><span id="scw">　スコア <b id="score">0</b></span></div>
 </header>
 <div id="start" class="card">
   <p class="serif" style="font-size:1.2rem;margin:0 0 6px">今夜のバーテンダーはあなた。</p>
   <p style="margin:0">お客さんの注文どおりにボトルをタップして注ぎ、作り方（ビルド／ステア／シェイク）とガーニッシュを選んで提供しましょう。全5杯。</p>
   <label class="opt"><input type="checkbox" id="blind"> レシピを隠す（得点2倍・上級者向け）</label>
   <p class="stat" style="margin:10px 0 0;font-size:.88rem">で5人モード：全部5人のお客さん（追加注文あり）。<br>エンドレスモード：材料・作り方・ガーニッシュのどれかを間違えるまで続きます。自己ベストを目指そう。</p>
-  <div class="row"><button class="primary" id="go">5人モードで開店</button><button class="primary" id="goEnd">エンドレスモードで開店</button></div>
+  <p class="stat" style="margin:6px 0 0;font-size:.88rem">ナイトメアモード：SAN（正気度）が尽きるまで、1日5人の営業を何日続けられるか。「禁忌」の材料が登場します。</p>
+  <div class="row"><button class="primary" id="go">5人モードで開店</button><button class="primary" id="goEnd">エンドレスモードで開店</button><button class="primary" id="goNm">ナイトメアモードで開店</button></div>
 </div>
 <div id="game" class="hide">
   <div id="top">
+  <div class="card hide" id="sanrow" style="padding:6px 12px;margin-top:0"><div style="display:flex;justify-content:space-between;font-size:.85rem"><span>SAN（正気度）</span><b id="sanv">0</b></div><div style="height:6px;border-radius:3px;background:var(--btn);margin-top:4px;overflow:hidden"><div id="sanbar" style="height:100%;width:0;background:var(--ok)"></div></div></div>
   <section class="card order">
     <div class="who" id="who"></div>
     <h2 id="drink"></h2>
@@ -112,7 +115,7 @@ label.opt{display:flex;gap:8px;align-items:center;font-size:.9rem;color:var(--su
 <section class="card result hide" id="res"></section>
 </main>
 <script>
-const ING={gin:['ジン','#cfe6ee'],vodka:['ウォッカ','#e6eef2'],rum:['ラム','#c9a36a'],tequila:['テキーラ','#e8d9a0'],orange_l:['オレンジリキュール','#f0a64a'],coffee_l:['コーヒーリキュール','#3b2418'],lime:['ライムジュース','#b8e07a'],syrup:['シロップ','#f3e6b8'],oj:['オレンジジュース','#ffa726'],cran:['クランベリー','#c2243e'],tonic:['トニックウォーター','#dff3f5'],ginger:['ジンジャーエール','#e3c36b'],cola:['コーラ','#4a2a1a'],whisky:['ウイスキー','#c8872e'],lemon:['レモンジュース','#f4ec8a'],soda:['ソーダ','#eaf6f8'],vd:['ドライベルモット','#e9e2b0'],vs:['スイートベルモット','#6b2a22'],campari:['カンパリ','#d0243a'],pine:['パイナップルジュース','#f7d54a'],coconut:['ココナッツミルク','#f6f1e4'],absinthe:['アブサン','#bfe39a'],mead:['蜂蜜酒（ミード）','#e8b94a'],white_w:['白ワイン','#efe3a0'],red_w:['赤ワイン','#7a1830'],spark:['スパークリングワイン','#f3ecb0'],coffee:['コーヒー','#3a2616'],milk:['ミルク','#fbf6ee']};
+const ING={gin:['ジン','#cfe6ee'],vodka:['ウォッカ','#e6eef2'],rum:['ラム','#c9a36a'],tequila:['テキーラ','#e8d9a0'],orange_l:['オレンジリキュール','#f0a64a'],coffee_l:['コーヒーリキュール','#3b2418'],lime:['ライムジュース','#b8e07a'],syrup:['シロップ','#f3e6b8'],oj:['オレンジジュース','#ffa726'],cran:['クランベリー','#c2243e'],tonic:['トニックウォーター','#dff3f5'],ginger:['ジンジャーエール','#e3c36b'],cola:['コーラ','#4a2a1a'],whisky:['ウイスキー','#c8872e'],lemon:['レモンジュース','#f4ec8a'],soda:['ソーダ','#eaf6f8'],vd:['ドライベルモット','#e9e2b0'],vs:['スイートベルモット','#6b2a22'],campari:['カンパリ','#d0243a'],pine:['パイナップルジュース','#f7d54a'],coconut:['ココナッツミルク','#f6f1e4'],absinthe:['アブサン','#bfe39a'],mead:['蜂蜜酒（ミード）','#e8b94a'],white_w:['白ワイン','#efe3a0'],red_w:['赤ワイン','#7a1830'],spark:['スパークリングワイン','#f3ecb0'],coffee:['コーヒー','#3a2616'],milk:['ミルク','#fbf6ee'],f_abs:['海のアブサン','#7fd6c9'],f_wine:['百味ワイン','#b05aa8'],f_syrup:['ファンの醸造酒','#c9a0ff'],f_mead:['黄金の蜂蜜酒','#ffd24a'],f_milk:['黒山羊印のミルク','#4a2f55']};
 const GAR={none:['なし'],lemon:['レモン'],lime:['ライム'],orange:['オレンジ'],cherry:['チェリー'],olive:['オリーブ'],mint:['ミント']};
 const MET={build:'ビルド（そのまま）',stir:'ステア（かき混ぜる）',shake:'シェイク（振る）'};
 const MENU=[
@@ -167,7 +170,7 @@ const MENU=[
 ];
 const CUS=['会社帰りのお客さん','常連の山田さん','観光客のお客さん','今夜が誕生日のお客さん','静かに飲みたいお客さん','隣町から来たお客さん','初めて来店のお客さん'];
 const CAP=8;
-let pour=[],method=null,garnish=null,cur=null,round=0,score=0,order=[],blind=false,busy=false,follow=false,served=0,cust=[],endless=false;
+let pour=[],method=null,garnish=null,cur=null,round=0,score=0,order=[],blind=false,busy=false,follow=false,served=0,cust=[],endless=false,nm=false,san=0,day=1,days=0,dayBad=false,REV=[];
 const $=id=>document.getElementById(id);
 function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a}
 function counts(p){const c={};p.forEach(k=>c[k]=(c[k]||0)+1);return c}
@@ -179,12 +182,12 @@ function drawGlass(mixed){
 }
 function renderList(){
   const c=counts(pour),ks=Object.keys(c);
-  $('list').innerHTML=(ks.length?ks.map(k=>`<b>${ING[k][0]}</b> ×${c[k]}`).join('　'):'グラスは空です。ボトルをタップして注ぎましょう。')+`<br>作り方：${method?MET[method].split('（')[0]:'―'}　飾り：${garnish?GAR[garnish][0]:'―'}`;
+  $('list').innerHTML=(ks.length?ks.map(k=>`<b>${dn(k)}</b> ×${c[k]}`).join('　'):'グラスは空です。ボトルをタップして注ぎましょう。')+`<br>作り方：${method?MET[method].split('（')[0]:'―'}　飾り：${garnish?GAR[garnish][0]:'―'}`;
   drawGlass(false)
 }
 function buildBottles(){
   const b=$('bottles');b.innerHTML='';
-  Object.keys(ING).filter(k=>CAT[k]===tab).forEach(k=>{const e=document.createElement('button');e.className='bottle';e.innerHTML=`<span class="dot" style="background:${ING[k][1]}"></span>${ING[k][0]}`;e.onclick=()=>{if(busy||pour.length>=CAP)return;pour.push(k);renderList()};b.appendChild(e)});
+  Object.keys(ING).filter(k=>CAT[k]===tab).forEach(k=>{const e=document.createElement('button');e.className='bottle';e.innerHTML=`<span class="dot" style="background:${ING[k][1]}"></span>${dn(k)}`;e.onclick=()=>{if(busy||pour.length>=CAP)return;pour.push(k);renderList()};b.appendChild(e)});
 }
 function setup(){
   const m=$('methods');m.innerHTML='';
@@ -192,10 +195,10 @@ function setup(){
 }
 function next(){
   cur=order[round];pour=[];method=null;garnish=null;busy=false;drawGarnish(null);
-  $('n').textContent=endless?served+1:round+1;$('score').textContent=score;
-  {const p=cust[round];$('who').textContent=p.n+(follow?'「おいしかった！同じ好みでもう一杯！」':'「'+p.q+'」');}
-  $('drink').textContent=cur.n;
-  $('recipe').innerHTML=blind?'':Object.entries(cur.r).map(([k,v])=>`<span>${ING[k][0]} ${v}</span>`).join('');
+  $('n').textContent=endless?served+1:round+1;$('scw').classList.toggle('hide',nm);if(nm){$('lbl').textContent=day+'日目';$('of').textContent='/5人目'}$('score').textContent=score;
+  {const p=cust[round];$('who').textContent=p.n+(follow?'「おいしかった！同じ好みでもう一杯！」':'「'+(cur.f?pick(['……いつもの、あれを。名前は言えないが。','潮の匹いがする。……分かるだろう？','ひそひそ声で何かを囁いている…']):p.q)+'」');}
+  $('drink').textContent=ordName(cur);
+  $('recipe').innerHTML=blind?'':Object.entries(cur.r).map(([k,v])=>`<span>${dn(k)} ${v}</span>`).join('');
   $('how').textContent=blind?'レシピ非表示：お店の定番レシピを思い出して作ってください。ガーニッシュもお忘れなく。':'作り方：'+MET[cur.m]+'　ガーニッシュ：'+GAR[cur.g][0];
   [...$('methods').children].forEach(x=>x.classList.remove('on'));
   [...$('garnishes').children].forEach(x=>x.classList.remove('on'));
@@ -216,25 +219,28 @@ function judge(){
   const keys=new Set([...Object.keys(c),...Object.keys(need)]);
   let err=0;const lines=[];
   keys.forEach(k=>{const a=c[k]||0,b=need[k]||0;err+=Math.abs(a-b);
-    if(a!==b)lines.push(`<li class="warn">${ING[k][0]}：${a}杯分（正解は${b}杯分）</li>`)});
+    if(a!==b)lines.push(`<li class="warn">${dn(k)}：${a}杯分（正解は${b}杯分）</li>`)});
   let acc=Math.max(0,1-err/total);
   const mOk=method===cur.m;
   if(!mOk){acc*=.7;lines.push(`<li class="warn">作り方：${MET[method]}（正解は${MET[cur.m]}）</li>`)}
   if(garnish!==cur.g){acc*=.85;lines.push(`<li class="warn">ガーニッシュ：${GAR[garnish][0]}（正解は${GAR[cur.g][0]}）</li>`)}
-  const pts=endless?((err>0||!mOk||garnish!==cur.g)?0:100*(blind?2:1)):Math.round(acc*100)*(blind?2:1);
+  let sanMsg='';
+  if(nm){const dmg=err+(mOk?0:2)+(garnish!==cur.g?1:0);const cost=dmg===0?(cur.f?4:1):5+dmg*2+(cur.f?2:0);const s0=san;san=Math.max(0,san-cost);if(dmg>0)dayBad=true;sanMsg=`SAN ${s0} → ${san}（-${cost}）`;updSan()}
+  const pts=nm?0:endless?((err>0||!mOk||garnish!==cur.g)?0:100*(blind?2:1)):Math.round(acc*100)*(blind?2:1);
   score+=pts;$('score').textContent=score;
   const st=acc>=.95?3:acc>=.7?2:acc>=.4?1:0;
   const say=['うーん…これは注文と違うかな。','飲めなくはない、かな。','おいしい！ありがとう。','完璧！今夜はいい店に来たよ。'][st];
   if(!lines.length)lines.push('<li class="good">レシピも作り方もガーニッシュもぴったりです。</li>');
-  const last=!endless&&round===4,more=st>=2&&!follow,miss=endless&&(err>0||!mOk||garnish!==cur.g);served++;
+  const last=!endless&&!nm&&round===4,more=!nm&&st>=2&&!follow,miss=(endless&&(err>0||!mOk||garnish!==cur.g))||(nm&&san<=0);served++;
   $('res').innerHTML=`<div class="stars" aria-label="星${st}つ">${'★'.repeat(st)}${'☆'.repeat(3-st)}</div>
   <p class="serif" style="font-size:1.1rem;margin:4px 0">「${say}」</p>
-  <div>${cur.n}　+${pts}点</div><ul class="diff">${lines.join('')}</ul>
-  ${miss?'<p class="warn" style="margin:8px 0 0">レシピを間違えてしまいました。ゲームオーバーです。</p>':more?'<p class="good" style="margin:8px 0 0">気に入ってもらえました。同じ好みでもう一杯の注文です。</p>':''}<div class="row"><button class="primary" id="nx">${miss?'結果を見る':more?'追加注文を受ける':last?'結果を見る':'次のお客さんへ'}</button></div>`;
-  $('res').classList.remove('hide');$('nx').onclick=()=>{if(miss){finish()}else if(more){follow=true;order[round]=pickDrink(cust[round].t,cur);next()}else{follow=false;round++;if(endless){newCust(round);next()}else{last?finish():next()}}};
+  <div>${ordName(cur)}　${nm?sanMsg:'+'+pts+'点'}</div><ul class="diff">${lines.join('')}</ul>
+  ${miss?'<p class="warn" style="margin:8px 0 0">'+(nm?'もう正気を保てない…ゲームオーバーです。':'レシピを間違えてしまいました。ゲームオーバーです。')+'</p>':more?'<p class="good" style="margin:8px 0 0">気に入ってもらえました。同じ好みでもう一杯の注文です。</p>':''}<div class="row"><button class="primary" id="nx">${miss?'結果を見る':more?'追加注文を受ける':last?'結果を見る':nm&&round===4?'営業を終える':'次のお客さんへ'}</button></div>`;
+  $('res').classList.remove('hide');$('nx').onclick=()=>{if(miss){finish()}else if(more){follow=true;order[round]=pickDrink(cust[round].t,cur);next()}else{follow=false;round++;if(nm){if(round>4)endDay();else{newNm(round);next()}}else if(endless){newCust(round);next()}else{last?finish():next()}}};
   $('nx').focus({preventScroll:true});$('res').scrollIntoView({block:'nearest'})
 }
 function finish(){
+  if(nm)return finishNm();
   if(endless)return finishEndless();
   $('game').classList.add('hide');
   const max=served*(blind?200:100),r=score/max;
@@ -244,8 +250,8 @@ function finish(){
   <div class="row"><button class="primary" id="again">もう一度開店する</button></div>`;
   $('res').classList.remove('hide');$('again').onclick=()=>{$('res').classList.add('hide');$('start').classList.remove('hide')}
 }
-$('goEnd').onclick=()=>{blind=$('blind').checked;endless=true;cust=[];order=[];newCust(0);round=0;score=0;served=0;follow=false;$('lbl').textContent='';$('of').textContent='杯目';$('start').classList.add('hide');$('game').classList.remove('hide');next()};
-$('go').onclick=()=>{blind=$('blind').checked;endless=false;$('lbl').textContent='お客さん';$('of').textContent='/5';cust=shuffle(PERS).slice(0,5);order=cust.map(p=>pickDrink(p.t));round=0;score=0;served=0;follow=false;$('start').classList.add('hide');$('game').classList.remove('hide');next()};
+$('goEnd').onclick=()=>{blind=$('blind').checked;endless=true;nm=false;$('sanrow').classList.add('hide');buildTabs();showTab('alc');cust=[];order=[];newCust(0);round=0;score=0;served=0;follow=false;$('lbl').textContent='';$('of').textContent='杯目';$('start').classList.add('hide');$('game').classList.remove('hide');next()};
+$('go').onclick=()=>{blind=$('blind').checked;endless=false;nm=false;$('sanrow').classList.add('hide');buildTabs();showTab('alc');$('lbl').textContent='お客さん';$('of').textContent='/5';cust=shuffle(PERS).slice(0,5);order=cust.map(p=>pickDrink(p.t));round=0;score=0;served=0;follow=false;$('start').classList.add('hide');$('game').classList.remove('hide');next()};
 $('undo').onclick=()=>{if(busy)return;pour.pop();renderList()};
 $('clear').onclick=()=>{if(busy)return;pour=[];renderList()};
 $('serve').onclick=serve;
@@ -270,11 +276,11 @@ Object.assign(TAGS,{'シンデレラ':['nonalc','sweet','light','tropical'],'シ
 Object.assign(TAGS,{'アブサンドリップ':['strong','dry'],'デス・イン・ザ・アフタヌーン':['fizzy','dry'],'サゼラック':['strong','dry'],'ミードトニック':['fizzy','light','sweet'],'ミードサワー':['sweet','light'],'ミードモスコミュール':['fizzy','sweet'],'アイリッシュコーヒー':['strong','sweet'],'エスプレッソマティーニ':['strong','sweet'],'コーヒートニック':['nonalc','fizzy','dry','light'],'カルーアミルク':['sweet','light'],'ホワイトルシアン':['sweet','strong'],'ラムミルクパンチ':['sweet','tropical'],'カフェオレ':['nonalc','sweet','light'],'ミモザ':['fizzy','light','dry'],'サングリア':['sweet','light'],'ワインスプリッツァー':['fizzy','light','dry'],'カリモーチョ':['fizzy','sweet'],'ニューヨークサワー':['strong','sweet']});
 PERS.push({n:'お酒が飲めないお客さん',t:'nonalc',q:'ノンアルコールでお願いします。'});
 function pickDrink(t,ex){const l=MENU.filter(d=>{const g=TAGS[d.n]||[];return d!==ex&&g.includes(t)&&(t==='nonalc'||!g.includes('nonalc'))});return shuffle(l.length?l:MENU)[0]}
-const CAT={gin:'alc',vodka:'alc',rum:'alc',tequila:'alc',whisky:'alc',orange_l:'alc',coffee_l:'alc',vd:'alc',vs:'alc',campari:'alc',lime:'soft',lemon:'soft',oj:'soft',cran:'soft',pine:'soft',coconut:'soft',syrup:'soft',tonic:'mixer',ginger:'mixer',cola:'mixer',soda:'mixer',absinthe:'alc',mead:'alc',white_w:'alc',red_w:'alc',spark:'alc',coffee:'soft',milk:'soft'};
-const TABS=[['alc','アルコール'],['soft','ノンアルコール'],['mixer','割りもの'],['method','作り方'],['garnish','ガーニッシュ']];
+const CAT={gin:'alc',vodka:'alc',rum:'alc',tequila:'alc',whisky:'alc',orange_l:'alc',coffee_l:'alc',vd:'alc',vs:'alc',campari:'alc',lime:'soft',lemon:'soft',oj:'soft',cran:'soft',pine:'soft',coconut:'soft',syrup:'soft',tonic:'mixer',ginger:'mixer',cola:'mixer',soda:'mixer',absinthe:'alc',mead:'alc',white_w:'alc',red_w:'alc',spark:'alc',coffee:'soft',milk:'soft',f_abs:'taboo',f_wine:'taboo',f_syrup:'taboo',f_mead:'taboo',f_milk:'taboo'};
+const TABS=[['alc','アルコール'],['soft','ノンアルコール'],['mixer','割りもの'],['method','作り方'],['garnish','ガーニッシュ'],['taboo','禁忌']];
 let tab='alc';
-function buildTabs(){const w=$('tabs');w.innerHTML='';TABS.forEach(([k,l])=>{const e=document.createElement('button');e.textContent=l;e.dataset.k=k;e.onclick=()=>showTab(k);w.appendChild(e)})}
-function showTab(t){tab=t;[...$('tabs').children].forEach(x=>x.classList.toggle('on',x.dataset.k===t));const ing=t==='alc'||t==='soft'||t==='mixer';$('bottles').classList.toggle('hide',!ing);$('methods').classList.toggle('hide',t!=='method');$('garnishes').classList.toggle('hide',t!=='garnish');if(ing)buildBottles()}
+function buildTabs(){const w=$('tabs');w.innerHTML='';TABS.filter(t=>t[0]!=='taboo'||nm).forEach(([k,l])=>{const e=document.createElement('button');e.textContent=l;e.dataset.k=k;e.onclick=()=>showTab(k);w.appendChild(e)})}
+function showTab(t){tab=t;[...$('tabs').children].forEach(x=>x.classList.toggle('on',x.dataset.k===t));const ing=t==='alc'||t==='soft'||t==='mixer'||t==='taboo';$('bottles').classList.toggle('hide',!ing);$('methods').classList.toggle('hide',t!=='method');$('garnishes').classList.toggle('hide',t!=='garnish');if(ing)buildBottles()}
 function newCust(i){cust[i]=PERS[Math.random()*PERS.length|0];order[i]=pickDrink(cust[i].t)}
 function finishEndless(){
   $('game').classList.add('hide');
@@ -288,6 +294,38 @@ function finishEndless(){
   <div class="row"><button class="primary" id="again">もう一度開店する</button></div>`;
   $('res').classList.remove('hide');$('again').onclick=()=>{$('res').classList.add('hide');$('start').classList.remove('hide')}
 }
+const FB={f_abs:{pre:'海の',base:['absinthe']},f_wine:{pre:'百味',base:['white_w','red_w','spark']},f_syrup:{pre:'ファンの',base:['syrup']},f_mead:{pre:'黄金の',base:['mead']},f_milk:{pre:'黒山羊印の',base:['milk']}};
+function pick(a){return a[Math.random()*a.length|0]}
+function garble(n){const p='縺繧繝ｿ謁蜷髒鬮█▓▒░ヸ莫繲荳';let s='';for(let i=0;i<n;i++)s+=p[Math.random()*p.length|0];return s}
+function nread(){return [69,59,49,39,29].filter(t=>san<=t).length}
+function readable(k){return !FB[k]||(nm&&REV.slice(0,nread()).includes(k))}
+function dn(k){return readable(k)?ING[k][0]:garble(ING[k][0].length)}
+function ordName(o){return o.f&&!readable(o.f)?garble(o.pre.length)+o.base:o.n}
+function mkTaboo(){for(const f of shuffle(Object.keys(FB))){const b=FB[f].base,c=MENU.filter(d=>Object.keys(d.r).some(k=>b.includes(k)));if(!c.length)continue;const d=pick(c),r={};for(const k in d.r){const kk=b.includes(k)?f:k;r[kk]=(r[kk]||0)+d.r[k]}return{n:FB[f].pre+d.n,base:d.n,pre:FB[f].pre,f:f,m:d.m,g:d.g,r:r}}return null}
+function newNm(i){cust[i]=PERS[Math.random()*PERS.length|0];const p=Math.min(.7,.25+.08*(day-1));let o=Math.random()<p?mkTaboo():null;if(!o)o=pickDrink(cust[i].t);order[i]=o}
+function updSan(){$('sanv').textContent=san;const b=$('sanbar');b.style.width=Math.min(100,san/80*100)+'%';b.style.background=san<=29?'var(--bad)':san<=49?'var(--brass)':'var(--ok)';showTab(tab)}
+function endDay(){
+  days=day;const s0=san,flaw=!dayBad;
+  san=Math.max(0,san+(flaw?2:-2));updSan();
+  const dead=san<=0;
+  $('res').innerHTML=`<p class="stat" style="margin:0">${day}日目の営業終了</p><p class="serif" style="font-size:1.1rem;margin:4px 0">${dead?'……闇が、あなたを呑み込んだ。':flaw?'今夜は穏やかな眠りだった。':'悪夢にうなされた夜だった。'}</p><div>SAN ${s0} → ${san}（${flaw?'+2':'-2'}）</div><div class="row"><button class="primary" id="nd">${dead?'結果を見る':'翻日の営業へ'}</button></div>`;
+  $('res').classList.remove('hide');
+  $('nd').onclick=()=>{if(dead){finish();return}day++;round=0;dayBad=false;newNm(0);next()};
+  $('nd').focus({preventScroll:true});$('res').scrollIntoView({block:'nearest'})
+}
+function finishNm(){
+  $('game').classList.add('hide');
+  const key='cg_best_nm'+(blind?'_b':'');
+  let best=0;try{best=+localStorage.getItem(key)||0}catch(e){}
+  const nb=days>best;if(nb){try{localStorage.setItem(key,String(days))}catch(e){}}
+  const rank=days>=8?'深淵を超えた者':days>=6?'深淵の門番':days>=4?'夜のバーテンダー':days>=2?'見習いバーテンダー':'最初の夜に呑まれた者';
+  $('res').innerHTML=`<p class="stat" style="margin:0">ナイトメアモード　正気を失いました</p><p class="big serif">${days}日間営業</p>
+  <p style="margin:0">提供した杯数：${served}杯　自己ベスト：${Math.max(best,days)}日${nb&&days>0?'　<b class="good">新記録！</b>':''}</p>
+  <p class="serif" style="font-size:1.2rem;margin:6px 0 0">称号：${rank}</p>
+  <div class="row"><button class="primary" id="again">もう一度開店する</button></div>`;
+  $('res').classList.remove('hide');$('again').onclick=()=>{$('res').classList.add('hide');$('start').classList.remove('hide')}
+}
+$('goNm').onclick=()=>{blind=$('blind').checked;nm=true;endless=false;san=50+(Math.random()*31|0);REV=shuffle(Object.keys(FB));day=1;days=0;dayBad=false;cust=[];order=[];round=0;score=0;served=0;follow=false;$('sanrow').classList.remove('hide');buildTabs();showTab('alc');updSan();newNm(0);$('start').classList.add('hide');$('game').classList.remove('hide');next()};
 document.addEventListener('gesturestart',e=>e.preventDefault());
 setup();buildGarnish();buildTabs();showTab('alc');
 </script>
