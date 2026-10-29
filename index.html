@@ -302,7 +302,8 @@ function readable(k){return !FB[k]||(nm&&REV.slice(0,nread()).includes(k))}
 function dn(k){return readable(k)?ING[k][0]:garble(ING[k][0].length)}
 function ordName(o){return o.f&&!readable(o.f)?garble(o.pre.length)+o.base:o.n}
 function mkTaboo(){for(const f of shuffle(Object.keys(FB))){const b=FB[f].base,c=MENU.filter(d=>Object.keys(d.r).some(k=>b.includes(k)));if(!c.length)continue;const d=pick(c),r={};for(const k in d.r){const kk=b.includes(k)?f:k;r[kk]=(r[kk]||0)+d.r[k]}return{n:FB[f].pre+d.n,base:d.n,pre:FB[f].pre,f:f,m:d.m,g:d.g,r:r}}return null}
-function newNm(i){cust[i]=PERS[Math.random()*PERS.length|0];const p=Math.min(.7,.25+.08*(day-1));let o=Math.random()<p?mkTaboo():null;if(!o)o=pickDrink(cust[i].t);order[i]=o}
+const CUSTF={f_abs:['深きもの'],f_syrup:['炎の精'],f_milk:['黒い仔山羊'],f_mead:['ビヤーキー'],f_wine:['赤の女王','悪心影','暗黒のファラオ','黒いライオン','ジャック・オー・ランタン','セト','チクタクマン','テスカトリポカ','バロン・サムディ','膨らんだ女','闇をさまようもの']};
+function newNm(i){const p=Math.min(.7,.25+.08*(day-1));const o=Math.random()<p?mkTaboo():null;if(o){cust[i]={n:pick(CUSTF[o.f]),t:'taboo',q:''};order[i]=o}else{cust[i]=pick(PERS);order[i]=pickDrink(cust[i].t)}}
 function updSan(){$('sanv').textContent=san;const b=$('sanbar');b.style.width=Math.min(100,san/80*100)+'%';b.style.background=san<=29?'var(--bad)':san<=49?'var(--brass)':'var(--ok)';showTab(tab)}
 function endDay(){
   days=day;const s0=san,flaw=!dayBad;
