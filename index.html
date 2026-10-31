@@ -71,7 +71,7 @@ label.opt{display:flex;gap:8px;align-items:center;font-size:.9rem;color:var(--su
   <p style="margin:0">お客さんの注文どおりにボトルをタップして注ぎ、作り方（ビルド／ステア／シェイク）とガーニッシュを選んで提供しましょう。全5杯。</p>
   <label class="opt"><input type="checkbox" id="blind"> レシピを隠す（得点2倍・上級者向け）</label>
   <p class="stat" style="margin:10px 0 0;font-size:.88rem">で5人モード：全部5人のお客さん（追加注文あり）。<br>エンドレスモード：材料・作り方・ガーニッシュのどれかを間違えるまで続きます。自己ベストを目指そう。</p>
-  <p class="stat" style="margin:6px 0 0;font-size:.88rem">ナイトメアモード：SAN（正気度）が尽きるまで、1日5人の営業を何日続けられるか。「禁忌」の材料が登場します。</p>
+  <p class="stat" style="margin:6px 0 0;font-size:.88rem">ナイトメアモード：SAN（正気度）が尽きるまで、1日5人の営業を何日続けられるか。「禁忌」の材料が登場します。禁忌が読めるようになるほど、他の材料は読めなくなっていきます。</p>
   <div class="row"><button class="primary" id="go">5人モードで開店</button><button class="primary" id="goEnd">エンドレスモードで開店</button><button class="primary" id="goNm">ナイトメアモードで開店</button></div>
 </div>
 <div id="game" class="hide">
@@ -298,7 +298,9 @@ const FB={f_abs:{pre:'海の',base:['absinthe']},f_wine:{pre:'百味',base:['whi
 function pick(a){return a[Math.random()*a.length|0]}
 function garble(n){const p='縺繧繝ｿ謁蜷髒鬮█▓▒░ヸ莫繲荳';let s='';for(let i=0;i<n;i++)s+=p[Math.random()*p.length|0];return s}
 function nread(){return [69,59,49,39,29].filter(t=>san<=t).length}
-function readable(k){return !FB[k]||(nm&&REV.slice(0,nread()).includes(k))}
+let GORD=[];
+function garbledN(k){if(FB[k]||!nm)return false;const arr=GORD.filter(x=>CAT[x]===CAT[k]);return arr.indexOf(k)<Math.round(nread()/5*arr.length)}
+function readable(k){return FB[k]?(nm&&REV.slice(0,nread()).includes(k)):!garbledN(k)}
 function dn(k){return readable(k)?ING[k][0]:garble(ING[k][0].length)}
 function ordName(o){return o.f&&!readable(o.f)?garble(o.pre.length)+o.base:o.n}
 function mkTaboo(){for(const f of shuffle(Object.keys(FB))){const b=FB[f].base,c=MENU.filter(d=>Object.keys(d.r).some(k=>b.includes(k)));if(!c.length)continue;const d=pick(c),r={};for(const k in d.r){const kk=b.includes(k)?f:k;r[kk]=(r[kk]||0)+d.r[k]}return{n:FB[f].pre+d.n,base:d.n,pre:FB[f].pre,f:f,m:d.m,g:d.g,r:r}}return null}
@@ -326,7 +328,7 @@ function finishNm(){
   <div class="row"><button class="primary" id="again">もう一度開店する</button></div>`;
   $('res').classList.remove('hide');$('again').onclick=()=>{$('res').classList.add('hide');$('start').classList.remove('hide')}
 }
-$('goNm').onclick=()=>{blind=$('blind').checked;nm=true;endless=false;san=50+(Math.random()*31|0);REV=shuffle(Object.keys(FB));day=1;days=0;dayBad=false;cust=[];order=[];round=0;score=0;served=0;follow=false;$('sanrow').classList.remove('hide');buildTabs();showTab('alc');updSan();newNm(0);$('start').classList.add('hide');$('game').classList.remove('hide');next()};
+$('goNm').onclick=()=>{blind=$('blind').checked;nm=true;endless=false;san=50+(Math.random()*31|0);REV=shuffle(Object.keys(FB));GORD=shuffle(Object.keys(ING).filter(k=>!FB[k]));day=1;days=0;dayBad=false;cust=[];order=[];round=0;score=0;served=0;follow=false;$('sanrow').classList.remove('hide');buildTabs();showTab('alc');updSan();newNm(0);$('start').classList.add('hide');$('game').classList.remove('hide');next()};
 document.addEventListener('gesturestart',e=>e.preventDefault());
 setup();buildGarnish();buildTabs();showTab('alc');
 </script>
